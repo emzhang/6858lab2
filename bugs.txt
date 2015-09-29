@@ -1,17 +1,47 @@
-#
-# [file:#lines]
-# desc
-#
 
-[zookd.c:1612]
-description goes here. for example, the 'buf' variable can be
-overwritten by the 'msg' variable because ...
+[http.c:159]
+- url_decode copies the second argument into the first argu:ment without checking the length of either argument.
+- 'value' would overflow
+- the request would have a long header
+- canaries would work
 
-    <paste offending line(s) of code here>
+url_decode(value, sp);
 
-[http.c:1512]
-another description.
 
-    <paste offending line(s) of code here>
+[http.c:344]
+dst is a buffer of size 1024, as defined in line 353. If dirname is longer than that, it will overflow the buffer.
+You can overflow the buffer by entering in a dirname that is longer than 1024 characters.
+- dst would overflow
+- the request would have a very long directory name like "usssseeeerrrrrrssssss" but longer
+- canaries would work
 
-# many more come here
+void dir_join(char *dst, const char *dirname, const char *filename) {
+    strcpy(dst, dirname);
+    if (dst[strlen(dst) - 1] != '/')
+        strcat(dst, "/");
+    strcat(dst, filename);
+}
+
+[http.c:165]
+There is a potential overflow if the length of buf + length of "HTTP_" is longer than the allocated size of envvar
+- value would overflow
+- the request would have a really long header value that would overflow
+- canaries would work 
+
+sprintf(envvar, "HTTP_%s", buf);
+
+[http.c:166]
+If the length of value is greater than 512, there is chance of overwriting the return address above this buffer
+- envvar would overflow
+- the request would look like exploit-2a where the headers in the request are super long
+- canaries would work
+
+setenv(envvar, value, 1);
+
+[http.c:282]
+if the length of name and what's already in pn together is longer than 1024, pn could overflow
+- pn would overflow
+- the request would look like exploit-3 or exploit-2b
+- stack canaries wouldn't work here because we're not overwriting the eip
+strcat(pn, name);
+

@@ -161,8 +161,10 @@ const char *http_request_headers(int fd)
         /* Store header in env. variable for application code */
         /* Some special headers don't use the HTTP_ prefix. */
         if (strcmp(buf, "CONTENT_TYPE") != 0 &&
-            strcmp(buf, "CONTENT_LENGTH") != 0) {
-            sprintf(envvar, "HTTP_%s", buf);
+            strcmp(buf, "CONTENT_LENGTH") != 0) {     
+            strncpy(envvar, "HTTP_", 5);
+            strlcat(envvar, buf);
+            strlcpy(envvar, value, sizeof(envvar))
             setenv(envvar, value, 1);
         } else {
             setenv(buf, value, 1);
@@ -279,7 +281,7 @@ void http_serve(int fd, const char *name)
     getcwd(pn, sizeof(pn));
     setenv("DOCUMENT_ROOT", pn, 1);
 
-    strcat(pn, name);
+    strlcat(pn, name, sizeof(pn));
     split_path(pn);
 
     if (!stat(pn, &st))
@@ -341,7 +343,8 @@ void http_serve_file(int fd, const char *pn)
 }
 
 void dir_join(char *dst, const char *dirname, const char *filename) {
-    strcpy(dst, dirname);
+    
+    strlcpy(dst, dirname, sizeof(dst)); 
     if (dst[strlen(dst) - 1] != '/')
         strcat(dst, "/");
     strcat(dst, filename);

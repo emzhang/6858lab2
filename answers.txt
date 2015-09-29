@@ -1,1 +1,24 @@
 ## Place your answers here.
+Exploit-2a
+This exploit overflows the value buffer and overwrites the eip
+
+Exploit-2b
+The function pointer right above the pn buffer gets overwritten
+
+Exercise 3
+Of all the exploits in exercise 1, only 1 of the long header exploits would actually be vulnerable because the long header would only trip the first buffer overflow dealing with headers
+
+The exploit dealing with the long directory relies on the fact that there needs to be a very long directory name in order to be exploited. The current directories only have really short names so they can't be exploited
+
+The exploit with overflowing pn works! (see exercise 3) the function pointer is rewritten to point back to the bottom of the stack which contains the shellcode to unlink the grades.txt file.
+
+Exercise 4
+Of all the exploits in exercise 1, only 1 of the long header exploits would be vulnerable because the long header would only trip the first buffer overflow. The consequent unchecked buffers would be inaccessible with user input. 
+
+The long directory name exploit still requires having a very long directory name in order to be exploited. Since the attacker cannot choose or create directory names, this exploit wouldn't be possible here. 
+
+Overflowing pn works! It's what I did. 
+
+Exercise 5
+1) In http_serve_file, there is no check on whether pn is a valid file path. If pn contained something like /../../../../../../../../emzhang/secrets.txt, this file could be opened.
+2) In http_serve_executable, there is some kind of checking of whether a file to be executed is valid or not in the function valid_cgi_script (seeing that it's not a symlink, pipe, etc.) However, one of the checks only looks at whether the user id of an executable is the same as its group id. Thereby, an attacker could open up any executable on the server, as long as the uid and gid were the same. This is possible because the uid and gid are passed in as arguments in main in zookfs.c.
